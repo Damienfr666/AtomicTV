@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby -rubygems
 
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'AtomicTV'))
+require 'trollop'
 
 include AtomicTV
 
@@ -8,12 +9,27 @@ def display_error(error)
   $stderr.puts "! ERROR: #{error.human_message}"
 end
 
+opts = Trollop.options do
+  banner("Usage: AtomicTV [options]")
+  opt :dry_run,    "Only output basic episode information for debug", type: :flag
+  opt :use_itunes, "Use the itunes store api instead of tvdb",        type: :flag
+end
+
 ARGV.each do |path|
   begin
     file_path = Pathname.new(path)
-    metadata = TVDBEpisode.metadata_for_filename(file_path.basename)
-    tagger = AtomicParsleyTagger.new(file_path, metadata)
-    tagger.run
+    metadata = if opts[:use_itunes]
+                 ItunesEpisode.metadata_for_filename(file_path.basename)
+               else
+                 TVDBEpisode.metadata_for_filename(file_path.basename)
+               end
+    if opts[:dry_run]
+      require 'pp'
+      pp metadata
+    else
+      tagger = AtomicParsleyTagger.new(file_path, metadata)
+      tagger.run
+    end
     puts "* Tagged: #{file_path.basename}"
   rescue AtomicParsleyTagger::AtomicParsleyUnavailable => error
     display_error(error)
