@@ -18,11 +18,10 @@ end
 ARGV.each do |path|
   begin
     file_path = Pathname.new(path)
-    metadata = if opts[:use_itunes]
-                 ItunesEpisode.metadata_for_filename(file_path.basename)
-               else
-                 TVDBEpisode.metadata_for_filename(file_path.basename)
-               end
+    series, episode = TVDBEpisode.series_and_episode_for(file_path.basename)
+    itunes_episode =  ItunesEpisode.episode_for(file_path.basename) if opts[:use_itunes]
+    metadata = EpisodeMetadata.new(series, episode, itunes_episode)
+
     if opts[:dry_run]
       require 'pp'
       pp metadata

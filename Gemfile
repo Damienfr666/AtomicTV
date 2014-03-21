@@ -2,7 +2,7 @@ source "http://rubygems.org"
 
 gem "plist", "3.1.0"
 gem "tvdb_party", "0.7.0"
-gem "itunes", "0.6.0"
+gem "itunes"
 gem "rash"
 gem "trollop"
 

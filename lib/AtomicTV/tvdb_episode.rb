@@ -25,7 +25,7 @@ module AtomicTV
       end
     end
 
-    def self.metadata_for_filename(filename)
+    def self.series_and_episode_for(filename)
       parser = FilenameParser.parse(filename)
       search_results = client.search(parser.series_name)
       raise UnknownSeries.new(parser.series_name) if search_results.empty?
@@ -33,7 +33,7 @@ module AtomicTV
       series = client.get_series_by_id(search_results.first['seriesid'])
       episode = client.get_episode(series, parser.season_number, parser.episode_number)
       raise UnknownEpisode.new(series.name, parser.season_number, parser.episode_number) if episode.nil?
-      return EpisodeMetadata.new(series, episode)
+      return series, episode
     end
 
     private

@@ -69,7 +69,10 @@ module AtomicTV
         'TVSeasonNum' => metadata.tv_season_number,
         'TVEpisodeNum' => metadata.tv_episode_number,
         'tracknum' => metadata.track_number,
-        'year' => metadata.air_date
+        'year' => metadata.air_date,
+        'contentRating' => metadata.content_advisory_rating,
+        'advisory' => metadata.track_is_clean ? 'clean' : 'explicit',
+        'cnID' => metadata.track_id,
       }
 
       metadata.with_loaded_posters do
@@ -77,6 +80,7 @@ module AtomicTV
         command << %Q{"#{file_path}" }
         command << %Q{--overWrite }
         command << %Q{--rDNSatom "#{escape_double_quotes(cast_metadata)}" name=iTunMOVI domain=com.apple.iTunes }
+        command << %Q{--artwork REMOVE_ALL }
         metadata.posters.each do |poster|
           command << %Q{--artwork #{poster.path} }
         end

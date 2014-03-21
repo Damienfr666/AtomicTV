@@ -27,7 +27,7 @@ module AtomicTV
       end
     end
 
-    def self.metadata_for_filename(filename)
+    def self.episode_for(filename)
       parser = FilenameParser.parse(filename)
       season_name = "#{parser.series_name}, Season #{parser.season_number}"
       search_results = client.tv_show(season_name).results.
@@ -37,7 +37,7 @@ module AtomicTV
 
       possible_episodes = search_results.select{|s|s.track_number == parser.episode_number}
       raise UnknownEpisode.new(parser.series_name, parser.season_number, parser.episode_number) if possible_episodes.size != 1
-      return ItunesEpisodeMetadata.new(possible_episodes.first)
+      possible_episodes.first
     end
 
     private
