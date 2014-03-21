@@ -11,7 +11,7 @@ module AtomicTV
       attr_reader :series_name
 
       def human_message
-        "Unknown TV series: '#{series_name}'"
+        "ITunes: Unknown TV series: '#{series_name}'"
       end
     end
 
@@ -23,7 +23,7 @@ module AtomicTV
       attr_reader :episode_id
 
       def human_message
-        "Unknown episode: #{episode_id}"
+        "ITunes: Unknown episode: #{episode_id}"
       end
     end
 
