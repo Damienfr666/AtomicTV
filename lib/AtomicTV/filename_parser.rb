@@ -13,11 +13,15 @@ module AtomicTV
       end
     end
 
-    FilenameFormat =  /\A(.*) - S(\d{2})E(\d{2})\.\w{3}\Z/
+    FilenameFormat =  /\A(.*)(?: - |\.)S(\d{2})E(\d{2}).*\.\w{3}\Z/
 
     def self.parse(filename)
       if filename.to_s =~ FilenameFormat
-        new($1, $2.to_i(10), $3.to_i(10))
+        series_name, season_num, episode_num = $1, $2, $3
+        series_name.gsub!('.', ' ')
+        season_num = season_num.to_i(10)
+        episode_num = episode_num.to_i(10)
+        new(series_name, season_num, episode_num)
       else
         raise InvalidFilename.new(filename)
       end
