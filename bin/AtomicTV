@@ -2,6 +2,7 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'AtomicTV'))
 require 'trollop'
+require 'readline'
 
 include AtomicTV
 
@@ -11,14 +12,36 @@ end
 
 opts = Trollop.options do
   banner("Usage: AtomicTV [options]")
-  opt :dry_run,    "Only output basic episode information for debug", type: :flag
-  opt :use_itunes, "Use the itunes store api instead of tvdb",        type: :flag
+  opt :dry_run,     "Only output basic episode information for debug", type: :flag
+  opt :use_itunes,  "Use the itunes store api instead of tvdb",        type: :flag
+  opt :try_gsub,    "Use gsub to try a filname mutation",              type: :string
+  opt :interactive, "If we can't find a match ask for human edit",     type: :flag
 end
 
 ARGV.each do |path|
   begin
     file_path = Pathname.new(path)
-    series, episode = TVDBEpisode.series_and_episode_for(file_path.basename)
+    series, episode = begin
+                        TVDBEpisode.series_and_episode_for(file_path.basename)
+                      rescue
+                        if opts[:interactive]
+                          Readline.pre_input_hook = -> do
+                            Readline.insert_text file_path.basename.to_s
+                            Readline.redisplay
+
+                            # Remove the hook right away.
+                            Readline.pre_input_hook = nil
+                          end
+
+                          filename = Readline.readline("Couldn't find the series/episode try something different?> ", false)
+                          TVDBEpisode.series_and_episode_for(filename)
+                        elsif opts[:try_gsub]
+                          filename = file_path.basename.to_s.gsub(*opts[:try_gsub].split('|'))
+                          TVDBEpisode.series_and_episode_for(filename)
+                        else
+                          raise
+                        end
+                      end
     itunes_episode =  ItunesEpisode.episode_for(file_path.basename) if opts[:use_itunes]
     metadata = EpisodeMetadata.new(series, episode, itunes_episode)
 
